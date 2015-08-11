@@ -1,5 +1,6 @@
 package com.tdd.kata;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -12,7 +13,15 @@ public final class StringCalculator {
     //Refactoring comma and newline as the default delimiters
     private final static String DEFAULT_DELIMITERS = ",|\n";
 
-    private final static String[] REGEX_LITERALS = new String[] {"?","*"};
+    private final static String[] REGEX_LITERALS = new String[] {"?","*","#"};
+
+    // Check that the given number should at least be zero.
+    // Numbers bigger than 1000 should be ignored.
+    private final static Long MIN_LIMIT = 0L;
+    private final static Long MAX_LIMIT = 1000L;
+
+    // This is to extract multiple delimiters.
+    private final static Pattern delimiterPattern = Pattern.compile("\\[(.*?)\\]");
 
     public static Long add(final String numbers) throws RuntimeException {
         if (!isValidInput(numbers)) throw new RuntimeException("Please input valid String of numbers");
@@ -33,13 +42,17 @@ public final class StringCalculator {
 
     private static Long calculateTotal(final String[] numberArr) {
         if (numberArr.length == 0) {
-            if (isStringAValidNumber(numberArr[0])) return Long.valueOf(numberArr[0]);
+            if (isStringAValidNumber(numberArr[0]).isEmpty()) return Long.valueOf(numberArr[0]);
             else throw new RuntimeException("Please input valid String of numbers");
         } else {
             Long sum = 0L;
+            String message = "";
             for (String n : numberArr) {
-                if (isStringAValidNumber(n)) sum = sum + Long.valueOf(n.trim());
-                else throw new RuntimeException("Please input valid String of numbers");
+                message = message + " " + isStringAValidNumber(n);
+                if (message.trim().isEmpty()) sum = sum + filterBigNumbers(Long.valueOf(n.trim()), MAX_LIMIT);
+            }
+            if (!message.trim().isEmpty()) {
+                throw new RuntimeException("Please input valid String of numbers: " + message);
             }
             return sum;
         }
@@ -56,11 +69,15 @@ public final class StringCalculator {
     }
 
     private static String parseDelimiter(String tempStr) {
+        String retDelim = DEFAULT_DELIMITERS;
+
         for (String r : REGEX_LITERALS) {
             if (tempStr.contains(r)) tempStr = tempStr.replace(r, "\\" + r);
         }
-       return  (DEFAULT_DELIMITERS + "|" + (tempStr.substring(
-                tempStr.indexOf("[") + 1, tempStr.indexOf("]"))));
+        Matcher m = delimiterPattern.matcher(tempStr);
+        while (m.find())    retDelim = retDelim + "|" + m.group(1);
+
+        return retDelim;
     }
 
     private static boolean isValidInput(final String numbers) {
@@ -68,14 +85,22 @@ public final class StringCalculator {
         return true;
     }
 
-    private static boolean isStringAValidNumber(final String number) {
-        Boolean isValid = null;
+    private static String isStringAValidNumber(final String number) {
         try {
-            Long.parseLong(number.trim());
-            isValid = true;
+            Long n = Long.parseLong(number.trim());
+            if (lessThan(n, MIN_LIMIT)) return n + "";
         } catch (Exception e) {
-            isValid = false;
+            return e.getMessage();
         }
-        return isValid;
+        return "";
+    }
+
+    private static boolean lessThan(final Long number, Long minLimit) {
+        return number < minLimit;
+    }
+
+    private static Long filterBigNumbers(final Long number, Long maxLimit) {
+        if (lessThan(number, maxLimit)) return number;
+        else return 0L;
     }
 }
