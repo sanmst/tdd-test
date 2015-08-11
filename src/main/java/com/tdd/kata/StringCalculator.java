@@ -14,8 +14,14 @@ public final class StringCalculator {
 
         if (numbers.isEmpty())   return 0L;
 
-        String[] numberArr = numbers.split(",");
+        // Updated the regular expression to include newline as a delimiter.
+        String[] numberArr = numbers.split(",|\n");
 
+        // Refactored the method and created a separate method for total calculation.
+        return calculateTotal(numberArr);
+    }
+
+    private static Long calculateTotal(final String[] numberArr) {
         if (numberArr.length == 0) {
             if (isStringAValidNumber(numberArr[0])) return Long.valueOf(numberArr[0]);
             else throw new RuntimeException("Please input valid String of numbers");
