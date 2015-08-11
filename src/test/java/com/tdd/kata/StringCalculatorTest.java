@@ -16,6 +16,14 @@ import org.junit.Test;
  * Allow the Add method to handle new lines between numbers (instead of commas).
  * the following input is ok:  “1\n2,3”  (will equal 6)
  * the following input is NOT ok:  “1,\n” (not need to prove it - just clarifying)
+ *
+ * Requirement 3:
+ * Support different delimiters
+ * to change a delimiter, the beginning of the string will contain a separate line that looks like this:   “//[delimiter]\n[numbers…]” for example “//;\n1;2” should return three where the default delimiter is ‘;’ .
+ * the first line is optional. all existing scenarios should still be supported
+ * Calling Add with a negative number will throw an exception “negatives not allowed” - and the negative that was passed.if there are multiple negatives, show all of them in the exception message
+ * Numbers bigger than 1000 should be ignored, so adding 2 + 1001  = 2
+ * Delimiters can be of any length with the following format:  “//[delimiter]\n” for example: “//[***]\n1***2***3” should return 6
  */
 public class StringCalculatorTest {
 
@@ -74,5 +82,41 @@ public class StringCalculatorTest {
     @Test(expected = RuntimeException.class)
     public final void allowInvlaidNewLineDelimiters() {
         StringCalculator.add("1\n,2,\n3,4,5,6");
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersInStrings() {
+        Long sum = StringCalculator.add("//[:]\n1:2:3,4,5,8");
+        Assert.assertTrue(sum == 23);
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersOfAnyLengthInStrings() {
+        Long sum = StringCalculator.add("//[@@@]\n1@@@2@@@3,4,5\n8");
+        Assert.assertTrue(sum == 23);
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersOfAnyLengthInStringsTest2() {
+        Long sum = StringCalculator.add("//[*]\n1*2*3,4,5\n8");
+        Assert.assertTrue(sum == 23);
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersOfAnyLengthInStringsTest3() {
+        Long sum = StringCalculator.add("//[?]\n1?2?3,4,5\n8");
+        Assert.assertTrue(sum == 23);
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersOfAnyLengthInStringsTest4() {
+        Long sum = StringCalculator.add("//[***]\n1***2***3,4,5\n8");
+        Assert.assertTrue(sum == 23);
+    }
+
+    @Test
+    public final void allowSpecifyingDelimitersOfAnyLengthInStringsTest5() {
+        Long sum = StringCalculator.add("//[???]\n1???2???3,4,5\n8");
+        Assert.assertTrue(sum == 23);
     }
 }
